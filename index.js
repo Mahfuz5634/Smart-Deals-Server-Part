@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -29,14 +29,49 @@ async function run() {
     const db = client.db("smart_db");
     const productCollection = db.collection("products");
 
+    //Get/find All
+    app.get("/products", async (req, res) => {
+      const cursor = productCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    //Get/find specific
+    app.get("/products/:id", async (req,res)=>{
+        const id=req.params.id;
+        const query={ _id: new ObjectId(id)};
+        const result= await productCollection.findOne(query)
+        res.send(result);
+
+    })
+
+    //post
     app.post("/products", async (req, res) => {
       const newProduct = req.body;
       const result = await productCollection.insertOne(newProduct);
       res.send(result);
     });
-    app.delte("/products/:id", async (req, res) => {
+
+    //update
+    app.patch("/products/:id", async (req, res) => {
       const id = req.params.id;
-     
+      const updateInfo = req.body;
+      const query = { _id: new ObjectId(id) };
+      const update = {
+        $set: updateInfo,
+        //  name:updateInfo.name,
+        //  price:updateInfo.price,
+      };
+      const result = await productCollection.updateOne(query, update);
+      res.send(result);
+    });
+
+    //delete
+    app.delete("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await productCollection.deleteOne(query);
+      res.send(result);
     });
 
     await client.db("admin").command({ ping: 1 });
