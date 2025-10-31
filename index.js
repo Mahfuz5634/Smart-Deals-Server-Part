@@ -28,11 +28,11 @@ async function run() {
 
     const db = client.db("smart_db");
     const productCollection = db.collection("products");
-    const bidcollection = db.collection('bidData')
+    const bidcollection = db.collection("bidData");
 
     //Get/find All
     app.get("/products", async (req, res) => {
-      const cursor = productCollection.find() //.sort({price_min:-1}).limit(5);-> for sorting  and set limit
+      const cursor = productCollection.find(); //.sort({price_min:-1}).limit(5);-> for sorting  and set limit
       //.skip(2)
       //query
       const result = await cursor.toArray();
@@ -40,13 +40,12 @@ async function run() {
     });
 
     //Get/find specific
-    app.get("/products/:id", async (req,res)=>{
-        const id=req.params.id;
-        const query={ _id: new ObjectId(id)};
-        const result= await productCollection.findOne(query)
-        res.send(result);
-
-    })
+    app.get("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await productCollection.findOne(query);
+      res.send(result);
+    });
 
     //post
     app.post("/products", async (req, res) => {
@@ -78,9 +77,29 @@ async function run() {
     });
 
     //bids related APIS--------------------------->
-    app.get("/bids",async (req,res)=>{
-      
-    })
+
+    //get all or using an email->
+    app.get("/bids", async (req, res) => {
+      const email = req.query.email;
+      const query = {};
+      if (email) {
+        query.buyer_email = email;
+      }
+       const cursor = bidcollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    //bid post
+    app.post("/products", async (req, res) => {
+      const newBid = req.body;
+      const result = await bidcollection.insertOne(newBid);
+      res.send(result);
+    });
+
+
+
+
 
     await client.db("admin").command({ ping: 1 });
     console.log("You Succesfully connected to MongoDB!");
