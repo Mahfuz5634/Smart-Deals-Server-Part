@@ -31,6 +31,14 @@ async function run() {
     const bidcollection = db.collection("bidData");
     const userCollection = db.collection("users");
 
+
+    //latese-products find
+    app.get('/latest-products',async (req,res)=>{
+      const cursor=productCollection.find().sort({created_at:-1}).limit(5);
+      const result=await cursor.toArray();
+      res.send(result);
+    })
+
     //userdataCollection
     app.post('/users',async(req,res)=>{
        const newUser=req.body;
